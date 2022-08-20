@@ -1,22 +1,59 @@
-const router = require('express').Router();
-const { Product, Category, Tag, ProductTag } = require('../../models');
+const router = require("express").Router();
+const { Product, Category, Tag, ProductTag } = require("../../models");
 
 // The `/api/products` endpoint
 
 // get all products
-router.get('/', (req, res) => {
+router.get("/", (req, res) => {
   // find all products
   // be sure to include its associated Category and Tag data
+  Product.findAll({
+    include: [
+      {
+        model: Category,
+        foreignKey: "category_id",
+      },
+      {
+        model: Tag,
+        attributes: ["id"],
+      },
+    ],
+  })
+    .then((products) => {
+      return res.json(products);
+    })
+    .catch((error) => {
+      return res.status(500).json(error.message);
+    });
 });
 
 // get one product
-router.get('/:id', (req, res) => {
+router.get("/:id", (req, res) => {
   // find a single product by its `id`
   // be sure to include its associated Category and Tag data
+  Product.findOne({
+    where: { id: req.params.id },
+    include: [
+      {
+        model: Category,
+        foreignKey: "category_id",
+      },
+      {
+        model: Tag,
+        attributes: ["id"],
+      },
+    ],
+  })
+    .then((product) => {
+      return res.json(product);
+    })
+    .catch((error) => {
+      return res.status(500).json(error.message);
+    });
 });
 
 // create new product
-router.post('/', (req, res) => {
+router.post("/", (req, res) => {
   /* req.body should look like this...
     {
       product_name: "Basketball",
@@ -48,7 +85,7 @@ router.post('/', (req, res) => {
 });
 
 // update product
-router.put('/:id', (req, res) => {
+router.put("/:id", (req, res) => {
   // update product data
   Product.update(req.body, {
     where: {
@@ -89,8 +126,17 @@ router.put('/:id', (req, res) => {
     });
 });
 
-router.delete('/:id', (req, res) => {
+router.delete("/:id", (req, res) => {
   // delete one product by its `id` value
+  Product.destroy({
+    where: { id: req.params.id },
+  })
+    .then((result) => {
+      return res.json(result);
+    })
+    .catch((error) => {
+      return res.status(500).json(error.message);
+    });
 });
 
 module.exports = router;
